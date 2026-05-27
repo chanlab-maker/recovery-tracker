@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Recovery">
+<title>Daily Recovery Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+  :root {
+    --bg:        #f7f7f5;
+    --surface:   #ffffff;
+    --border:    #e2e2de;
+    --border-md: #c8c8c2;
+    --text-1:    #1a1a18;
+    --text-2:    #5a5a55;
+    --text-3:    #9a9a94;
+    --green-bg:  #eaf3de;
+    --green-bd:  #3b6d11;
+    --green-tx:  #173404;
+    --red-bg:    #fcebeb;
+    --red-bd:    #a32d2d;
+    --red-tx:    #501313;
+    --blue-bg:   #e6f1fb;
+    --blue-bd:   #185fa5;
+    --blue-tx:   #042c53;
+    --purple-bg: #eeedfe;
+    --purple-bd: #534ab7;
+    --purple-tx: #26215c;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text-1);
+    min-height: 100vh;
+    padding: 0 0 4rem;
+  }
+
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .header-icon {
+    width: 36px; height: 36px;
+    background: var(--green-bg);
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--green-bd);
+    font-size: 18px;
+  }
+  .header-title { font-size: 16px; font-weight: 600; color: var(--text-1); }
+  .header-sub { font-size: 13px; color: var(--text-3); margin-top: 1px; }
+
+  .container { max-width: 560px; margin: 0 auto; padding: 1.5rem 1.25rem; }
+
+  .tabs {
+    display: flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 4px;
+    gap: 4px;
+    margin-bottom: 1.75rem;
+  }
+  .tab {
+    flex: 1; padding: 9px; border: none; background: transparent;
+    border-radius: var(--radius-sm); font-size: 14px; font-weight: 400;
+    color: var(--text-2); cursor: pointer; transition: all 0.15s;
+    font-family: inherit;
+  }
+  .tab.active {
+    background: var(--bg); color: var(--text-1); font-weight: 500;
+    border: 1px solid var(--border);
+  }
+
+  .stats {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 10px; margin-bottom: 2rem;
+  }
+  .stat {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-md); padding: 16px 12px; text-align: center;
+  }
+  .stat-num { font-size: 28px; font-weight: 600; color: var(--text-1); line-height: 1; }
+  .stat-lbl { font-size: 11px; color: var(--text-3); margin-top: 6px; letter-spacing: 0.02em; }
+
+  .section-lbl {
+    font-size: 11px; font-weight: 600; color: var(--text-3);
+    letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 10px;
+  }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .outcome-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .outcome-btn {
+    padding: 18px 16px; border: 1.5px solid var(--border-md);
+    border-radius: var(--radius-md); background: var(--surface);
+    font-size: 14px; font-weight: 500; color: var(--text-2);
+    cursor: pointer; text-align: left; transition: all 0.15s;
+    font-family: inherit;
+  }
+  .outcome-btn .ob-icon { font-size: 22px; display: block; margin-bottom: 8px; }
+  .outcome-btn:hover { border-color: var(--border-md); background: var(--bg); }
+  .outcome-btn.win.active { border: 2px solid var(--green-bd); background: var(--green-bg); color: var(--green-tx); }
+  .outcome-btn.loss.active { border: 2px solid var(--red-bd); background: var(--red-bg); color: var(--red-tx); }
+
+  .relapse-time-wrap { display: none; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+  .relapse-time-wrap.show { display: block; }
+  .time-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .time-btn {
+    padding: 12px 6px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--bg); font-size: 12px; font-weight: 500; color: var(--text-2);
+    cursor: pointer; text-align: center; font-family: inherit; transition: all 0.15s;
+  }
+  .time-btn .tb-icon { display: block; font-size: 18px; margin-bottom: 5px; color: var(--text-3); }
+  .time-btn:hover { border-color: var(--border-md); background: var(--surface); }
+  .time-btn.on { border: 2px solid var(--red-bd); background: var(--red-bg); color: var(--red-tx); }
+  .time-btn.on .tb-icon { color: var(--red-bd); }
+
+  .blist { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .bitem {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 13px; border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border); background: var(--bg);
+    cursor: pointer; transition: all 0.12s; user-select: none;
+  }
+  .bitem:hover { border-color: var(--border-md); }
+  .bitem.on { border: 2px solid var(--blue-bd); background: var(--blue-bg); }
+  .bcheck {
+    width: 20px; height: 20px; border-radius: 5px;
+    border: 1.5px solid var(--border-md); background: var(--surface);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all 0.12s; font-size: 12px; color: white;
+  }
+  .bitem.on .bcheck { background: var(--blue-bd); border-color: var(--blue-bd); }
+  .bitem.on .bcheck i { display: block !important; }
+  .blabel { font-size: 13px; color: var(--text-1); flex: 1; }
+  .bitem.on .blabel { color: var(--blue-tx); font-weight: 500; }
+  .del-btn {
+    background: none; border: none; cursor: pointer; padding: 2px 4px;
+    color: var(--text-3); font-size: 15px; line-height: 1; flex-shrink: 0;
+    border-radius: 4px; transition: color 0.12s;
+  }
+  .del-btn:hover { color: var(--red-bd); }
+
+  .add-row { display: flex; gap: 8px; margin-top: 10px; }
+  .add-row input {
+    flex: 1; padding: 10px 13px; font-size: 13px; font-family: inherit;
+    color: var(--text-1); background: var(--bg);
+    border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    transition: border-color 0.15s;
+  }
+  .add-row input:focus { outline: none; border-color: var(--blue-bd); }
+  .add-row input::placeholder { color: var(--text-3); }
+  .add-btn {
+    padding: 10px 14px; background: var(--bg); border: 1.5px solid var(--border-md);
+    border-radius: var(--radius-sm); font-size: 13px; font-weight: 500;
+    color: var(--text-2); cursor: pointer; font-family: inherit;
+    white-space: nowrap; transition: all 0.15s;
+  }
+  .add-btn:hover { background: var(--surface); color: var(--text-1); }
+
+  .moods { display: flex; gap: 8px; flex-wrap: wrap; }
+  .mood {
+    padding: 8px 16px; border-radius: 20px;
+    border: 1.5px solid var(--border); background: var(--surface);
+    font-size: 13px; color: var(--text-2); cursor: pointer;
+    transition: all 0.12s; font-family: inherit;
+  }
+  .mood:hover { border-color: var(--border-md); color: var(--text-1); }
+  .mood.on { border: 2px solid var(--purple-bd); background: var(--purple-bg); color: var(--purple-tx); font-weight: 500; }
+
+  textarea {
+    width: 100%; min-height: 80px;
+    font-size: 14px; font-family: inherit; color: var(--text-1);
+    background: var(--bg); border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm); padding: 11px 13px; resize: vertical;
+    transition: border-color 0.15s;
+  }
+  textarea:focus { outline: none; border-color: var(--blue-bd); }
+  textarea::placeholder { color: var(--text-3); }
+
+  .save-btn {
+    width: 100%; padding: 13px; margin-top: 1rem;
+    background: var(--text-1); border: none;
+    border-radius: var(--radius-sm); font-size: 14px; font-weight: 600;
+    color: white; cursor: pointer; transition: opacity 0.15s;
+    font-family: inherit; letter-spacing: 0.01em;
+  }
+  .save-btn:hover { opacity: 0.85; }
+
+  .toast {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--green-bd); color: var(--green-bg);
+    padding: 12px 16px; border-radius: var(--radius-sm);
+    font-size: 14px; font-weight: 500; margin-bottom: 1.25rem;
+    opacity: 0; transition: opacity 0.25s; pointer-events: none;
+  }
+
+  .cal-wrap { margin-bottom: 0; }
+  .cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+  .cal-dow { font-size: 11px; color: var(--text-3); text-align: center; padding-bottom: 6px; font-weight: 500; }
+  .cday {
+    aspect-ratio: 1; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; color: var(--text-3);
+  }
+  .cday.win { background: var(--green-bg); color: var(--green-tx); font-weight: 600; }
+  .cday.loss { background: var(--red-bg); color: var(--red-tx); font-weight: 600; }
+  .cday.today { font-weight: 700; border: 2px solid var(--border-md); color: var(--text-1); }
+
+  .hrow {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 0; border-bottom: 1px solid var(--border); font-size: 14px;
+  }
+  .hrow:last-child { border-bottom: none; }
+  .hdot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .hdot.win { background: var(--green-bd); }
+  .hdot.loss { background: var(--red-bd); }
+  .hdot.none { background: var(--border-md); }
+  .hdate { color: var(--text-1); min-width: 72px; font-weight: 500; }
+  .hbeh { color: var(--text-2); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hmeta { color: var(--text-3); font-size: 12px; text-align: right; white-space: nowrap; }
+
+  .icard {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 12px;
+  }
+  .ilbl { font-size: 12px; color: var(--text-3); margin-bottom: 4px; }
+  .ival { font-size: 18px; font-weight: 600; color: var(--text-1); }
+
+  .brow { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .blbl2 { min-width: 140px; font-size: 13px; color: var(--text-1); }
+  .btrack { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .bfill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+  .bfill.blue { background: var(--blue-bd); }
+  .bfill.purple { background: var(--purple-bd); }
+  .bfill.red { background: var(--red-bd); }
+  .bpct { min-width: 36px; text-align: right; font-size: 12px; font-weight: 600; color: var(--text-2); }
+
+  .empty {
+    text-align: center; padding: 3rem 1rem;
+    color: var(--text-3); font-size: 15px; line-height: 1.7;
+  }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+
+  @media (max-width: 480px) {
+    .header { padding: 1rem 1.25rem; }
+    .container { padding: 1.25rem 1rem; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .blist { grid-template-columns: 1fr; }
+    .outcome-pair { grid-template-columns: 1fr; }
+    .outcome-btn { display: flex; align-items: center; gap: 12px; padding: 14px 16px; }
+    .outcome-btn .ob-icon { margin-bottom: 0; font-size: 20px; flex-shrink: 0; }
+    .tab { font-size: 13px; padding: 8px; }
+    .stat-num { font-size: 24px; }
+    .card { padding: 1.25rem; }
+    .moods { gap: 6px; }
+    .mood { padding: 7px 13px; font-size: 13px; }
+    .blbl2 { min-width: 110px; }
+    .time-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon"><i class="ti ti-activity-heartbeat" aria-hidden="true"></i></div>
+  <div>
+    <div class="header-title">Recovery tracker</div>
+    <div class="header-sub" id="today-sub"></div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="toast" id="toast"><i class="ti ti-check" aria-hidden="true"></i> Entry saved</div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="go('log')">Today</button>
+    <button class="tab" onclick="go('history')">History</button>
+    <button class="tab" onclick="go('insights')">Insights</button>
+  </div>
+
+  <div id="plog">
+    <div class="stats">
+      <div class="stat"><div class="stat-num" id="s-streak">0</div><div class="stat-lbl">Streak</div></div>
+      <div class="stat"><div class="stat-num" id="s-best">0</div><div class="stat-lbl">Best</div></div>
+      <div class="stat"><div class="stat-num" id="s-logged">0</div><div class="stat-lbl">Logged</div></div>
+      <div class="stat"><div class="stat-num" id="s-rate">—</div><div class="stat-lbl">Success</div></div>
+    </div>
+
+    <div class="card">
+      <div class="section-lbl" style="margin-bottom:14px">How did today go?</div>
+      <div class="outcome-pair">
+        <button class="outcome-btn win" id="ob-win" onclick="setOut('win')">
+          <span class="ob-icon"><i class="ti ti-circle-check" aria-hidden="true"></i></span>
+          Stayed clean today
+        </button>
+        <button class="outcome-btn loss" id="ob-loss" onclick="setOut('loss')">
+          <span class="ob-icon"><i class="ti ti-refresh" aria-hidden="true"></i></span>
+          Had a relapse
+        </button>
+      </div>
+      <div class="relapse-time-wrap" id="relapse-time-wrap">
+        <div class="section-lbl" style="margin-bottom:12px">When did it happen?</div>
+        <div class="time-grid">
+          <button class="time-btn" data-t="morning" onclick="setTime('morning')">
+            <span class="tb-icon"><i class="ti ti-sunrise" aria-hidden="true"></i></span>Morning
+          </button>
+          <button class="time-btn" data-t="afternoon" onclick="setTime('afternoon')">
+            <span class="tb-icon"><i class="ti ti-sun" aria-hidden="true"></i></span>Afternoon
+          </button>
+          <button class="time-btn" data-t="evening" onclick="setTime('evening')">
+            <span class="tb-icon"><i class="ti ti-sunset" aria-hidden="true"></i></span>Evening
+          </button>
+          <button class="time-btn" data-t="night" onclick="setTime('night')">
+            <span class="tb-icon"><i class="ti ti-moon" aria-hidden="true"></i></span>Night
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-lbl" style="margin-bottom:14px">What did you do today?</div>
+      <div class="blist" id="blist"></div>
+      <div class="add-row">
+        <input type="text" id="new-behavior" placeholder="Add a custom behavior..." maxlength="40"
+          onkeydown="if(event.key==='Enter')addBehavior()">
+        <button class="add-btn" onclick="addBehavior()"><i class="ti ti-plus" aria-hidden="true"></i> Add</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-lbl" style="margin-bottom:14px">How were you feeling?</div>
+      <div class="moods" id="moods"></div>
+      <hr class="divider">
+      <div class="section-lbl" style="margin-bottom:10px">Notes</div>
+      <textarea id="notes" placeholder="Anything worth noting about today..."></textarea>
+      <button class="save-btn" onclick="save()">Save today's entry</button>
+    </div>
+  </div>
+
+  <div id="phistory" style="display:none">
+    <div class="card cal-wrap">
+      <div class="section-lbl" style="margin-bottom:12px">Last 28 days</div>
+      <div class="cal" id="cal"></div>
+    </div>
+    <div class="card" style="margin-top:1.25rem">
+      <div id="hlist"></div>
+    </div>
+  </div>
+
+  <div id="pinsights" style="display:none">
+    <div id="ilist"></div>
+  </div>
+</div>
+
+<script>
+const DEFAULT_BS = [
+  {id:'therapy', lbl:'Therapy session'},
+  {id:'exercise', lbl:'Exercise'},
+  {id:'rubiks',   lbl:"Rubik's cube"},
+  {id:'games',    lbl:'Video games'},
+  {id:'social',   lbl:'Talked to someone'},
+  {id:'prayer',   lbl:'Prayer / scripture'},
+  {id:'sleep',    lbl:'Good sleep'},
+  {id:'blocker',  lbl:'Content blocker on'},
+];
+const MOODS = ['calm','bored','lonely','stressed','sad','frustrated','good'];
+const TIMES = ['morning','afternoon','evening','night'];
+
+let entries = {}, customBS = [], cur = {out:null, beh:[], mood:null, time:null};
+
+function tkey() { return new Date().toISOString().split('T')[0]; }
+function allBS() { return [...DEFAULT_BS, ...customBS]; }
+
+function load() {
+  try {
+    const r = localStorage.getItem('rc_entries2'); if (r) entries = JSON.parse(r);
+    const c = localStorage.getItem('rc_custom_bs'); if (c) customBS = JSON.parse(c);
+  } catch(e) {}
+  const d = new Date();
+  document.getElementById('today-sub').textContent = d.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'});
+  buildBlist();
+  const e = entries[tkey()];
+  if (e) {
+    if (e.out) setOut(e.out, true);
+    if (e.time) setTime(e.time, true);
+    (e.beh||[]).forEach(b => togB(b, true));
+    if (e.mood) setMood(e.mood, true);
+    if (e.notes) document.getElementById('notes').value = e.notes;
+  }
+}
+
+function saveData() {
+  try {
+    localStorage.setItem('rc_entries2', JSON.stringify(entries));
+    localStorage.setItem('rc_custom_bs', JSON.stringify(customBS));
+  } catch(e) {}
+}
+
+function buildBlist() {
+  const g = document.getElementById('blist'); g.innerHTML = '';
+  allBS().forEach(b => {
+    const isCustom = !DEFAULT_BS.find(d => d.id === b.id);
+    const div = document.createElement('div');
+    div.className = 'bitem'; div.id = 'bi-' + b.id;
+    div.onclick = (e) => { if (!e.target.closest('.del-btn')) togB(b.id); };
+    div.innerHTML = `<div class="bcheck"><i class="ti ti-check" style="display:none" aria-hidden="true"></i></div><span class="blabel">${b.lbl}</span>${isCustom ? `<button class="del-btn" onclick="delBehavior('${b.id}')" title="Remove"><i class="ti ti-x" aria-hidden="true"></i></button>` : ''}`;
+    g.appendChild(div);
+  });
+  cur.beh.forEach(id => {
+    const el = document.getElementById('bi-' + id);
+    if (el) {
+      el.classList.add('on');
+      const ic = el.querySelector('i'); if (ic) ic.style.display = 'block';
+    }
+  });
+}
+
+function addBehavior() {
+  const inp = document.getElementById('new-behavior');
+  const lbl = inp.value.trim(); if (!lbl) return;
+  const id = 'custom_' + Date.now();
+  customBS.push({id, lbl});
+  saveData(); buildBlist();
+  inp.value = '';
+}
+
+function delBehavior(id) {
+  customBS = customBS.filter(b => b.id !== id);
+  cur.beh = cur.beh.filter(b => b !== id);
+  saveData(); buildBlist();
+}
+
+function buildMoods() {
+  const g = document.getElementById('moods'); g.innerHTML = '';
+  MOODS.forEach(m => {
+    const d = document.createElement('button');
+    d.className = 'mood'; d.dataset.m = m;
+    d.textContent = m.charAt(0).toUpperCase() + m.slice(1);
+    d.onclick = () => setMood(m); g.appendChild(d);
+  });
+}
+
+function setOut(v, silent) {
+  cur.out = v;
+  document.getElementById('ob-win').classList.toggle('active', v === 'win');
+  document.getElementById('ob-loss').classList.toggle('active', v === 'loss');
+  document.getElementById('relapse-time-wrap').classList.toggle('show', v === 'loss');
+  if (v !== 'loss') { cur.time = null; document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('on')); }
+}
+
+function setTime(v, silent) {
+  cur.time = v;
+  document.querySelectorAll('.time-btn').forEach(b => b.classList.toggle('on', b.dataset.t === v));
+}
+
+function togB(id, forceOn) {
+  if (forceOn) { if (!cur.beh.includes(id)) cur.beh.push(id); }
+  else { const i = cur.beh.indexOf(id); if (i > -1) cur.beh.splice(i, 1); else cur.beh.push(id); }
+  const el = document.getElementById('bi-' + id);
+  if (el) {
+    const on = cur.beh.includes(id);
+    el.classList.toggle('on', on);
+    const ic = el.querySelector('.bcheck i'); if (ic) ic.style.display = on ? 'block' : 'none';
+  }
+}
+
+function setMood(v) {
+  cur.mood = v;
+  document.querySelectorAll('.mood').forEach(el => el.classList.toggle('on', el.dataset.m === v));
+}
+
+function save() {
+  entries[tkey()] = {out: cur.out, time: cur.time, beh: [...cur.beh], mood: cur.mood, notes: document.getElementById('notes').value};
+  saveData(); updateStats();
+  const t = document.getElementById('toast'); t.style.opacity = '1';
+  setTimeout(() => t.style.opacity = '0', 2200);
+}
+
+function updateStats() {
+  const keys = Object.keys(entries).sort();
+  const withOut = keys.filter(k => entries[k].out);
+  const wins = withOut.filter(k => entries[k].out === 'win');
+  document.getElementById('s-logged').textContent = keys.length;
+  document.getElementById('s-rate').textContent = withOut.length ? Math.round(wins.length / withOut.length * 100) + '%' : '—';
+  let streak = 0, best = 0, run = 0, counting = true;
+  [...keys].sort().reverse().forEach(k => {
+    if (entries[k].out === 'win') { if (counting) streak++; run++; best = Math.max(best, run); }
+    else { counting = false; run = 0; }
+  });
+  document.getElementById('s-streak').textContent = streak;
+  document.getElementById('s-best').textContent = best;
+}
+
+function go(tab) {
+  ['log','history','insights'].forEach((t, i) => {
+    document.getElementById('p' + t).style.display = t === tab ? 'block' : 'none';
+    document.querySelectorAll('.tab')[i].classList.toggle('active', t === tab);
+  });
+  if (tab === 'history') renderHistory();
+  if (tab === 'insights') renderInsights();
+}
+
+function renderHistory() {
+  const cal = document.getElementById('cal'); cal.innerHTML = '';
+  ['S','M','T','W','T','F','S'].forEach(d => {
+    const el = document.createElement('div'); el.className = 'cal-dow'; el.textContent = d; cal.appendChild(el);
+  });
+  const today = new Date();
+  for (let i = 27; i >= 0; i--) {
+    const d = new Date(today); d.setDate(d.getDate() - i);
+    const k = d.toISOString().split('T')[0];
+    const el = document.createElement('div'); el.className = 'cday'; el.textContent = d.getDate();
+    if (i === 0) el.classList.add('today');
+    if (entries[k] && entries[k].out) el.classList.add(entries[k].out);
+    cal.appendChild(el);
+  }
+  const keys = Object.keys(entries).sort().reverse().slice(0, 30);
+  const hl = document.getElementById('hlist');
+  if (!keys.length) { hl.innerHTML = '<div class="empty">No entries yet.<br>Start logging today.</div>'; return; }
+  hl.innerHTML = keys.map(k => {
+    const e = entries[k], d = new Date(k);
+    const ds = d.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+    const bs = e.beh && e.beh.length ? e.beh.map(b => allBS().find(bv => bv.id === b)?.lbl || b).join(', ') : 'nothing logged';
+    const meta = [e.mood, e.time && e.out === 'loss' ? e.time : null].filter(Boolean).join(' · ');
+    return `<div class="hrow"><div class="hdot ${e.out||'none'}"></div><div class="hdate">${ds}</div><div class="hbeh">${bs}</div><div class="hmeta">${meta}</div></div>`;
+  }).join('');
+}
+
+function renderInsights() {
+  const el = document.getElementById('ilist');
+  const keys = Object.keys(entries).sort();
+  const withOut = keys.filter(k => entries[k].out);
+  if (withOut.length < 3) { el.innerHTML = '<div class="empty">Log at least 3 days with an outcome<br>to see what\'s working for you.</div>'; return; }
+  const wins = withOut.filter(k => entries[k].out === 'win');
+  const relapses = withOut.filter(k => entries[k].out === 'loss');
+
+  const bSucc = {}, bTotal = {};
+  allBS().forEach(b => { bSucc[b.id] = 0; bTotal[b.id] = 0; });
+  withOut.forEach(k => {
+    const isWin = entries[k].out === 'win';
+    (entries[k].beh||[]).forEach(b => { bTotal[b] = (bTotal[b]||0)+1; if (isWin) bSucc[b] = (bSucc[b]||0)+1; });
+  });
+  const moodC = {}, moodW = {};
+  withOut.forEach(k => {
+    const m = entries[k].mood; if (!m) return;
+    moodC[m] = (moodC[m]||0)+1;
+    if (entries[k].out === 'win') moodW[m] = (moodW[m]||0)+1;
+  });
+  const timeC = {morning:0, afternoon:0, evening:0, night:0};
+  relapses.forEach(k => { const t = entries[k].time; if (t) timeC[t]++; });
+  const totalTimed = Object.values(timeC).reduce((a,b) => a+b, 0);
+
+  const bBars = allBS().filter(b => bTotal[b.id] > 0).map(b => {
+    const pct = Math.round(bSucc[b.id] / bTotal[b.id] * 100);
+    return `<div class="brow"><div class="blbl2">${b.lbl}</div><div class="btrack"><div class="bfill blue" style="width:${pct}%"></div></div><div class="bpct">${pct}%</div></div>`;
+  }).join('');
+  const mBars = Object.keys(moodC).map(m => {
+    const pct = Math.round((moodW[m]||0) / moodC[m] * 100);
+    return `<div class="brow"><div class="blbl2" style="text-transform:capitalize">${m}</div><div class="btrack"><div class="bfill purple" style="width:${pct}%"></div></div><div class="bpct">${pct}%</div></div>`;
+  }).join('');
+  const timeBars = totalTimed > 0 ? TIMES.map(t => {
+    const pct = Math.round(timeC[t] / totalTimed * 100);
+    return `<div class="brow"><div class="blbl2" style="text-transform:capitalize">${t}</div><div class="btrack"><div class="bfill red" style="width:${pct}%"></div></div><div class="bpct">${timeC[t]}</div></div>`;
+  }).join('') : '';
+
+  el.innerHTML = `
+    <div class="icard"><div class="ilbl">Overall success rate</div><div class="ival">${Math.round(wins.length/withOut.length*100)}% &mdash; ${wins.length} of ${withOut.length} days</div></div>
+    ${bBars ? `<div class="card"><div class="section-lbl" style="margin-bottom:14px">Success rate when each behavior was logged</div>${bBars}<p style="font-size:12px;color:var(--text-3);margin-top:4px">Higher % = more often succeeded on days you did this</p></div>` : ''}
+    ${mBars ? `<div class="card"><div class="section-lbl" style="margin-bottom:14px">Success rate by mood</div>${mBars}</div>` : ''}
+    ${timeBars ? `<div class="card"><div class="section-lbl" style="margin-bottom:14px">When relapses happen</div>${timeBars}<p style="font-size:12px;color:var(--text-3);margin-top:4px">Number of relapses by time of day</p></div>` : ''}
+  `;
+}
+
+buildMoods(); load(); updateStats();
+</script>
+</body>
+</html>
